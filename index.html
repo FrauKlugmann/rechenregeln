@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trainer – Rechenregeln</title>
+<style>
+:root{--bg:#eef4ff;--card:#fff;--ink:#172033;--muted:#64748b;--line:#d9e2ef;--blue:#2563eb;--green:#15803d;--red:#b91c1c;--amber:#b45309;--soft:#f8fafc}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#eef4ff,#f8fbff);color:var(--ink);min-height:100vh;padding:22px}.app{width:min(980px,100%);margin:auto}.top{display:flex;justify-content:space-between;gap:15px;align-items:end;flex-wrap:wrap;margin-bottom:16px}h1{margin:0;font-size:clamp(1.65rem,4vw,2.5rem)}.sub{color:var(--muted);margin-top:4px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 14px 38px rgba(15,23,42,.08);padding:clamp(18px,4vw,32px)}button,select,input{font:inherit}button,select{border:1px solid var(--line);border-radius:12px;background:white;padding:11px 15px;cursor:pointer;font-weight:700}.primary{background:var(--blue);border-color:var(--blue);color:white}.secondary{background:var(--soft)}.controls{display:flex;gap:10px;flex-wrap:wrap}.rulebar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0}.rule{border:1px solid var(--line);border-radius:13px;padding:10px;text-align:center;background:var(--soft);color:var(--muted)}.rule.active{outline:3px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;font-weight:800}.rule.done{background:#f0fdf4;color:var(--green)}.task-label{text-align:center;color:var(--muted);font-size:.92rem}.original-wrap{margin:12px auto 4px;padding:12px 16px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;text-align:center}.original-label{font-size:.82rem;color:#9a3412;font-weight:750;margin-bottom:4px}.original-expression{font-size:clamp(1.25rem,3.5vw,1.9rem);font-weight:800;color:#7c2d12;display:flex;justify-content:center;gap:4px;flex-wrap:wrap}.expression{min-height:104px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;font-size:clamp(1.7rem,5vw,3rem);font-weight:800;margin:8px 0 18px}.token{padding:7px 9px;border-radius:12px;border:2px solid transparent;user-select:none}.token.op{color:#475569}.token.paren{color:#64748b}.token.calc{background:#ecfdf5;border-color:#86efac;animation:pop .28s ease}@keyframes pop{0%{transform:scale(.82)}100%{transform:scale(1)}}
+.workspace{border-top:1px solid var(--line);padding-top:20px}.instruction{text-align:center;font-weight:750;margin-bottom:10px}.source{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;min-height:72px;padding:10px;border-radius:17px;background:#f8fafc;border:1px solid var(--line)}.piece{min-width:48px;border:2px solid var(--line);background:white;border-radius:13px;padding:10px 12px;text-align:center;font-size:1.25rem;font-weight:850;cursor:grab;user-select:none}.piece:hover{border-color:#93c5fd}.piece.used{opacity:.3}.dropzone{margin:14px auto 0;width:min(650px,100%);min-height:92px;border:3px dashed #bfdbfe;border-radius:18px;background:#f8fbff;padding:12px}.droptitle{text-align:center;color:var(--muted);font-weight:700;margin-bottom:8px}.built{display:flex;justify-content:center;align-items:center;gap:7px;flex-wrap:wrap;min-height:42px}.built .piece{cursor:grab;background:#eff6ff;border-color:#bfdbfe}.built .piece.dragging{opacity:.35}.built .piece.dragover{outline:3px solid #60a5fa;transform:translateY(-2px)}.solve-row{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}.answer{width:140px;border:2px solid var(--line);border-radius:12px;padding:12px;text-align:center;font-size:1.25rem;font-weight:800}.feedback{min-height:58px;text-align:center;margin-top:13px;font-weight:750}.good{color:var(--green)}.bad{color:var(--red)}.hint{color:var(--amber)}.bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px}.pill{background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:10px 14px}.small{font-size:.9rem;color:var(--muted)}
+@media(max-width:650px){.rulebar{grid-template-columns:1fr}.piece{font-size:1.05rem;padding:9px}.expression{gap:2px}.token{padding:5px}}
+</style></head>
+<body><div class="app"><div class="top"><div><h1>Trainer – Rechenregeln</h1><div class="sub">Klammer vor Punkt vor Strich – den Rechenschritt selbst zusammensetzen.</div></div><div class="controls"><select id="level"><option value="1">Stufe 1</option><option value="2" selected>Stufe 2</option><option value="3">Stufe 3</option></select><button id="newBtn" class="secondary">Neue Aufgabe</button></div></div>
+<div class="card"><div class="original-wrap"><div class="original-label">Ursprüngliche Aufgabe</div><div id="originalExpression" class="original-expression"></div></div><div class="rulebar"><div class="rule" id="rParen">① Klammer</div><div class="rule" id="rPoint">② Punktrechnung</div><div class="rule" id="rLine">③ Strichrechnung</div></div><div class="task-label">Berechne die Aufgabe in der richtigen Reihenfolge:</div><div id="expression" class="expression"></div>
+<div class="workspace"><div class="instruction">Ziehe die einzelnen Teile des nächsten Rechenschritts nach unten <u>oder gib das richtige Zwischen- bzw. Endergebnis direkt ein</u>. Bei einer Klammerrechnung darfst du die Klammern mit auswählen – oder nur den Inhalt der Klammer.</div><div id="source" class="source"></div><div id="dropzone" class="dropzone"><div class="droptitle">Dein Rechenschritt – Teile hineinziehen, antippen und anschließend per Ziehen umsortieren</div><div id="built" class="built"><span class="small">Noch nichts ausgewählt.</span></div></div><div class="solve-row"><button id="clear" class="secondary">Auswahl leeren</button><span>=</span><input id="answer" class="answer" inputmode="numeric" autocomplete="off" placeholder="Ergebnis"><button id="check" class="primary">Prüfen & einsetzen</button></div><div id="feedback" class="feedback"></div></div>
+<div class="bottom"><div class="pill">Richtig: <b id="score">0</b></div><div class="pill">Versuche: <b id="steps">0</b></div><div class="small">Erst ein korrekt gewählter und richtig berechneter Teil wird oben ersetzt.</div></div></div></div>
+<script>
+const $=id=>document.getElementById(id);let score=0,steps=0,current=[],original=[],picked=[],nextId=1;
+const N=v=>({type:'num',v,id:nextId++}),O=v=>({type:'op',v,id:nextId++}),L=()=>({type:'lp',v:'(',id:nextId++}),R=()=>({type:'rp',v:')',id:nextId++});const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,choice=a=>a[rnd(0,a.length-1)];
+function signed(minAbs=2,maxAbs=9){let v=rnd(minAbs,maxAbs);return Math.random()<.42?-v:v}
+function makeTask(){nextId=1;let lv=+$('level').value,a,b,c,d,e;
+  if(lv===1){a=signed();b=signed();c=signed(2,8);return choice([
+    [N(a),O('+'),N(b),O('·'),N(c)],
+    [L(),N(a),O('-'),N(b),R(),O('·'),N(c)],
+    [N(a),O('·'),N(b),O('+'),N(c)]
+  ]);}
+  if(lv===2){a=signed();b=signed();c=signed();d=signed(2,8);return choice([
+    [N(a),O('+'),N(b),O('·'),N(c),O('-'),N(d)],
+    [L(),N(a),O('-'),N(b),R(),O('·'),N(c),O('+'),N(d)],
+    [N(a),O('·'),L(),N(b),O('+'),N(c),R(),O('-'),N(d)],
+    [N(a),O('+'),L(),N(b),O('-'),N(c),R(),O('·'),N(d)]
+  ]);}
+  a=signed();b=signed();c=signed();d=signed();e=signed(2,7);return choice([
+    [L(),N(a),O('+'),N(b),R(),O('·'),N(c),O('-'),N(d),O('·'),N(e)],
+    [N(a),O('·'),L(),N(b),O('+'),N(c),R(),O('-'),N(d),O('+'),N(e)],
+    [L(),N(a),O('·'),N(b),O('-'),N(c),R(),O('+'),N(d),O('·'),N(e)]
+  ]);
+}
+function fmt(n){return Number.isInteger(n)?String(n):String(n).replace('.',',')}function calc(a,op,b){return op==='·'?a*b:op===':'?a/b:op==='+'?a+b:a-b}
+function pairs(){let st=[],p=[];current.forEach((t,i)=>{if(t.type==='lp')st.push(i);if(t.type==='rp')p.push([st.pop(),i])});return p}function inner(){let p=pairs();if(!p.length)return null;p.sort((a,b)=>(a[1]-a[0])-(b[1]-b[0]));return p[0]}
+function legal(){let pr=inner(),lo=pr?pr[0]+1:0,hi=pr?pr[1]-1:current.length-1,ops=[];for(let i=lo;i<=hi;i++)if(current[i]?.type==='op')ops.push(i);let pts=ops.filter(i=>['·',':'].includes(current[i].v)),targets=pts.length?pts:ops.filter(i=>['+','-'].includes(current[i].v));if(!targets.length)return null;let i=targets[0],start=i-1,end=i+1;if(pr&&start===pr[0]+1&&end===pr[1]-1){start=pr[0];end=pr[1]}return{start,end,answer:calc(current[i-1].v,current[i].v,current[i+1].v),ids:current.slice(start,end+1).map(t=>t.id)};}
+function displayToken(arr,i){let t=arr[i];if(t.type!=='num')return t.v;let text=fmt(t.v);if(t.v<0&&i>0&&arr[i-1].type==='op')return '('+text+')';return text}
+function renderOriginal(){let box=$('originalExpression');box.innerHTML='';original.forEach((t,i)=>{let s=document.createElement('span');s.textContent=displayToken(original,i);box.appendChild(s)})}
+function render(high=null){$('expression').innerHTML='';current.forEach((t,i)=>{let s=document.createElement('span');s.className='token '+(t.type==='op'?'op':(t.type==='lp'||t.type==='rp'?'paren':''));s.textContent=displayToken(current,i);if(t.id===high)s.classList.add('calc');$('expression').appendChild(s)});renderSource();updateRule()}
+function renderSource(){$('source').innerHTML='';current.forEach(t=>{let b=document.createElement('div');b.className='piece'+(picked.includes(t.id)?' used':'');b.textContent=displayToken(current,current.findIndex(x=>x.id===t.id));b.draggable=true;b.dataset.id=t.id;b.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',t.id));b.addEventListener('click',()=>addPiece(t.id));$('source').appendChild(b)});renderBuilt()}
+function addPiece(id){if(picked.includes(id))return;picked.push(id);renderSource();$('feedback').innerHTML=''}function removePiece(id){picked=picked.filter(x=>x!==id);renderSource()}
+function movePicked(dragId,targetId,after=false){let from=picked.indexOf(dragId),to=picked.indexOf(targetId);if(from<0||to<0||from===to)return;picked.splice(from,1);to=picked.indexOf(targetId)+(after?1:0);picked.splice(to,0,dragId);renderSource();$('feedback').innerHTML=''}
+function renderBuilt(){let box=$('built');box.innerHTML='';if(!picked.length){box.innerHTML='<span class="small">Noch nichts ausgewählt.</span>';return}picked.forEach(id=>{let t=current.find(x=>x.id===id);if(!t)return;let b=document.createElement('div');b.className='piece';b.textContent=displayToken(current,current.findIndex(x=>x.id===t.id));b.title='Ziehen zum Umsortieren · Antippen zum Entfernen';b.draggable=true;b.dataset.id=id;b.addEventListener('dragstart',e=>{e.stopPropagation();b.classList.add('dragging');e.dataTransfer.setData('application/x-built-id',String(id));e.dataTransfer.effectAllowed='move'});b.addEventListener('dragend',()=>b.classList.remove('dragging'));b.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();b.classList.add('dragover')});b.addEventListener('dragleave',()=>b.classList.remove('dragover'));b.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();b.classList.remove('dragover');let dragId=+e.dataTransfer.getData('application/x-built-id');if(!dragId)return;let rect=b.getBoundingClientRect();movePicked(dragId,id,e.clientX>rect.left+rect.width/2)});b.addEventListener('click',()=>removePiece(id));box.appendChild(b)})}
+const dz=$('dropzone');dz.addEventListener('dragover',e=>e.preventDefault());dz.addEventListener('drop',e=>{e.preventDefault();let built=e.dataTransfer.getData('application/x-built-id');if(built){let id=+built;let i=picked.indexOf(id);if(i>=0){picked.splice(i,1);picked.push(id);renderSource()}return}let raw=e.dataTransfer.getData('text/plain');if(raw)addPiece(+raw)});
+function clearPick(){picked=[];$('answer').value='';renderSource();$('feedback').innerHTML=''}
+function fullResult(tokens){
+  let arr=tokens.map(t=>({type:t.type,v:t.v}));
+  function findPair(){let st=[];for(let i=0;i<arr.length;i++){if(arr[i].type==='lp')st.push(i);if(arr[i].type==='rp')return[st.pop(),i]}return null}
+  function reduceRange(lo,hi){
+    for(const kinds of [['·',':'],['+','-']]){
+      let i=lo+1;
+      while(i<=hi-1){
+        if(arr[i]?.type==='op'&&kinds.includes(arr[i].v)){
+          let v=calc(arr[i-1].v,arr[i].v,arr[i+1].v);arr.splice(i-1,3,{type:'num',v});hi-=2;i=Math.max(lo+1,i-2);
+        }else i++;
+      }
+    }
+  }
+  while(arr.some(t=>t.type==='lp')){let p=findPair();if(!p)break;reduceRange(p[0]+1,p[1]-1);arr.splice(p[0],3,{type:'num',v:arr[p[0]+1].v});}
+  reduceRange(0,arr.length-1);return arr[0]?.v;
+}
+function check(){
+  steps++;$('steps').textContent=steps;let m=legal();if(!m)return;
+  let raw=$('answer').value.trim().replace(',','.');
+  if(raw===''||isNaN(Number(raw))){$('feedback').innerHTML='<span class="bad">Bitte gib ein Ergebnis ein.</span>';return}
+  let entered=Number(raw);
+
+  /* Ohne heruntergezogene Aufgabenteile darf direkt ein korrektes Zwischen- oder Endergebnis eingegeben werden. */
+  if(picked.length===0){
+    let final=fullResult(current);
+    if(entered===final){
+      let nt=N(final);current=[nt];score++;$('score').textContent=score;$('answer').value='';
+      $('feedback').innerHTML=`<span class="good">✓ Richtig! Du hast direkt das Endergebnis berechnet: ${fmt(final)}. Die ursprüngliche Aufgabe bleibt oben sichtbar.</span>`;
+      render(nt.id);$('source').innerHTML='';$('built').innerHTML='';return;
+    }
+    if(entered===m.answer){
+      let nt=N(m.answer);current.splice(m.start,m.end-m.start+1,nt);score++;$('score').textContent=score;$('answer').value='';
+      $('feedback').innerHTML='<span class="good">✓ Richtig! Das Zwischenergebnis stimmt – auch ohne die Aufgabenteile herunterzuziehen.</span>';render(nt.id);
+      if(current.length===1){$('feedback').innerHTML=`<span class="good">✓ Fertig! Ergebnis: ${fmt(current[0].v)} – die ursprüngliche Aufgabe bleibt oben sichtbar.</span>`;$('source').innerHTML='';$('built').innerHTML='';}return;
+    }
+    $('feedback').innerHTML='<span class="bad">Das Ergebnis passt weder zum nächsten zulässigen Rechenschritt noch zum Endergebnis.</span>';return;
+  }
+
+  let variants=[m.ids];
+  if(current[m.start]?.type==='lp'&&current[m.end]?.type==='rp'&&m.ids.length>=5)variants.push(m.ids.slice(1,-1));
+  let same=variants.some(ids=>picked.length===ids.length&&picked.every((id,i)=>id===ids[i]));
+  if(!same){$('feedback').innerHTML='<span class="hint">Dieser Rechenschritt passt noch nicht. Wähle den Teil aus, den du jetzt berechnen darfst. Bei einer Klammerrechnung kannst du die Klammern mit auswählen oder nur den Inhalt.</span>';return}
+  if(entered!==m.answer){$('feedback').innerHTML='<span class="bad">Die Auswahl ist richtig – aber das Ergebnis stimmt noch nicht.</span>';return}
+  let nt=N(m.answer);current.splice(m.start,m.end-m.start+1,nt);score++;$('score').textContent=score;picked=[];$('answer').value='';$('feedback').innerHTML='<span class="good">✓ Richtig! Das Ergebnis wurde oben eingesetzt.</span>';render(nt.id);
+  if(current.length===1){$('feedback').innerHTML=`<span class="good">✓ Fertig! Ergebnis: ${fmt(current[0].v)} – die ursprüngliche Aufgabe bleibt oben sichtbar.</span>`;$('source').innerHTML='';$('built').innerHTML='';}
+}
+function updateRule(){document.querySelectorAll('.rule').forEach(x=>x.classList.remove('active','done'));if(inner()){$('rParen').classList.add('active');return}let ops=current.filter(t=>t.type==='op').map(t=>t.v);if(ops.some(x=>['·',':'].includes(x))){$('rParen').classList.add('done');$('rPoint').classList.add('active')}else{$('rParen').classList.add('done');$('rPoint').classList.add('done');$('rLine').classList.add('active')}}
+function newTask(){current=makeTask();original=current.map(t=>({...t}));picked=[];$('answer').value='';$('feedback').innerHTML='';renderOriginal();render()}
+$('clear').addEventListener('click',clearPick);$('check').addEventListener('click',check);$('answer').addEventListener('keydown',e=>{if(e.key==='Enter')check()});$('newBtn').addEventListener('click',newTask);$('level').addEventListener('change',newTask);newTask();
+</script></body></html>
